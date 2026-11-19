@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Inside Git · RIZZ study guide</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7f3;color:#1d302f;font:16px/1.55 Inter,-apple-system,BlinkMacSystemFont,sans-serif}header{border-bottom:1px solid #ccd3cb;background:#fff}header div,main{max-width:1140px;margin:auto;padding:17px 5%}header div{display:flex;align-items:center;justify-content:space-between}header b{letter-spacing:.08em}header span{font:14px monospace;color:#526760}main{padding-bottom:70px}h1,h2,h3,p{margin:0 0 .65em}h1{font:clamp(52px,8vw,92px)/1 Georgia,serif;letter-spacing:-.065em;margin:34px 0 12px}h2{font:36px/1.12 Georgia,serif;letter-spacing:-.035em}.intro{font-size:18px;color:#50625d}nav{display:flex;gap:5px;margin:28px 0 24px;flex-wrap:wrap;border-bottom:1px solid #bdcbc3}button,summary{cursor:pointer;font:inherit}button{border:1px solid #bdcbc3;border-radius:6px;padding:8px 13px;background:white;color:#213d34}button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #e49937;outline-offset:3px}nav button{background:transparent;border:0;border-radius:0;padding:10px 12px;border-bottom:3px solid transparent}nav [aria-pressed=true]{border-color:#157954;font-weight:700}section[hidden]{display:none}.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px}.map,.card,article{border:1px solid #cbd6ce;border-radius:14px;padding:clamp(20px,3vw,34px)}.map{background:#193c34;color:#fff;position:relative}.map h2{font-size:30px}.root{font:bold 15px monospace;color:#bcf0cc}.branches{margin:14px 0 0 8px;padding:0 0 0 24px;border-left:2px solid #759a88}.branches button{display:block;text-align:left;position:relative;width:100%;margin:9px 0;background:#244d40;color:#eaf7ef;border-color:#668371;font-weight:600}.branches button:before{content:'';position:absolute;width:24px;border-top:2px solid #759a88;top:50%;right:100%}.branches button[aria-pressed=true]{background:#d1f3bc;color:#193c34;border-color:#d1f3bc}.card,article{background:#fff;min-width:0}.meta{color:#46705f;font:14px monospace;margin-bottom:15px}details{margin-top:20px}summary{color:#205b43;font-weight:650}pre{background:#172e2b;color:#dff4e7;border-radius:8px;padding:14px;overflow:auto;line-height:1.5;max-height:360px}code{font-family:ui-monospace,monospace;font-size:.92em}article{overflow:auto}article h2:not(:first-child){margin-top:1.6em}table{border-collapse:collapse;width:100%;margin:16px 0}td,th{padding:10px;border-bottom:1px solid #d6dfd7;text-align:left;vertical-align:top}th{background:#edf2ea}a{color:#126340}.states{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}.states div{background:#edf3e9;padding:14px;border-radius:8px}.states strong{display:block;margin-top:6px}.actions{display:flex;gap:10px}.primary{background:#215e44;color:white}button:disabled{opacity:.45;cursor:default}@media(max-width:700px){.grid,.states{grid-template-columns:1fr}.branches{display:grid;grid-template-columns:1fr 1fr;gap:7px;border:0;padding:0;margin:12px 0 0}.branches button{margin:0}.branches button:before{display:none}nav button{padding:9px 7px}.states{gap:5px}.states div{display:flex;justify-content:space-between}.states strong{margin:0}article td,article th{min-width:105px}}
+</style>
+<header><div><b>RIZZ</b><span>libwyag.py</span></div></header><main><h1>Inside Git</h1><p class="intro">Follow one file from your working folder into Git history.</p>
+<nav aria-label="Study views"><button data-view="mapview">Mind map</button><button data-view="demo">Staging lab</button><button data-view="notes">Code walkthrough</button></nav>
+<section id="mapview" class="grid"><div class="map"><h2>Repository mind map</h2><span class="root">libwyag.py</span><div class="branches" id="branches"></div></div><div class="card" aria-live="polite"><div class="meta" id="loc"></div><h2 id="question"></h2><p id="description"></p><details id="source"><summary>Read the Python function</summary><pre><code id="snippet"></code></pre></details></div></section>
+<section id="demo" hidden class="card"><h2>Staging lab</h2><p>Track the contents of <code>notes/viva.txt</code> through six steps.</p><div aria-live="polite"><div id="step" class="meta"></div><pre id="command"></pre><div class="states"><div>Working file<strong id="working"></strong></div><div>Index version<strong id="indexval"></strong></div><div>Last commit<strong id="commitval"></strong></div></div><p id="why"></p></div><div class="actions"><button id="prev">Previous</button><button class="primary" id="next">Next step</button></div></section>
+<section id="notes" hidden><article><h2>1. Where does a command start?</h2>
+<p>Find <code>main</code> at line 49. When the user types <code>wyag add notes/viva.txt</code>, Python’s argument parser separates the command (<code>add</code>) from its input (<code>notes/viva.txt</code>). The matching case calls <code>cmd_add(args)</code>. That short wrapper finds the repository and hands the paths to <code>add</code>. When reading a new command, jump first to its <code>cmd_</code> function. It tells you which helpers do the work.</p>
+<p><code>GitRepository</code> (69) keeps the <strong>worktree</strong>, the folder where you edit files, and the <strong>gitdir</strong>, the hidden folder where WYAG keeps its records. If you run a command inside the <code>notes</code> subfolder, <code>repo_find</code> (182) checks that folder, then its parent, until it finds a <code>.git</code> directory.</p>
+<table>
+<thead>
+<tr>
+<th>Open this path</th>
+<th>What you learn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.git/HEAD</code></td>
+<td>Which branch is active. This source writes <code>ref: refs/heads/master</code> during initialization.</td>
+</tr>
+<tr>
+<td><code>.git/refs/heads/master</code></td>
+<td>Which commit that branch currently points to. The file appears on the first commit.</td>
+</tr>
+<tr>
+<td><code>.git/index</code></td>
+<td>Which version of each tracked file is selected for the next snapshot. Before staging anything, a missing index reads as an empty index.</td>
+</tr>
+<tr>
+<td><code>.git/objects/</code></td>
+<td>Where WYAG stores blobs, trees, commits, and annotated tags by ID.</td>
+</tr>
+<tr>
+<td><code>.git/refs/tags/</code></td>
+<td>Names given to particular objects, such as a release tag.</td>
+</tr>
+<tr>
+<td><code>.git/config</code></td>
+<td>Repository settings created by <code>repo_create</code> (126).</td>
+</tr>
+</tbody>
+</table>
+<h2>2. How does Python turn a file into a Git object?</h2>
+<p>Start with <code>object_write</code> (261). Suppose a file contains the four letters <code>blob</code> followed by a newline. There are <strong>five bytes</strong> of content. Here is the calculation in a small, standalone Python example.</p>
+<pre><code class="language-python">import hashlib
+
+content = b&quot;blob\n&quot;
+header = b&quot;blob 5\x00&quot;
+object_id = hashlib.sha1(header + content).hexdigest()
+</code></pre>
+<p>The first <code>blob</code> in the calculation is a type label. The second one happens to be what the student typed in the file. The zero byte marks where the header ends. When given a repository, <code>object_write</code> compresses these same header-plus-content bytes with zlib and saves them under the ID. The first two hex digits select a folder and the remaining digits form the filename. A second file with the same bytes reuses the same blob. Each filename lives separately in a tree entry.</p>
+<p><code>object_read</code> (227) reverses the storage steps. It opens the object by ID, decompresses it, checks the declared size and reads the type label. If the label says <code>blob</code>, it constructs a <code>GitBlob</code> from the payload. If it says <code>tree</code>, it constructs a <code>GitTree</code>. This reader handles loose objects, meaning one object per file.</p>
+<h3>Where OOP helps in RIZZ</h3>
+<table>
+<thead>
+<tr>
+<th>Python class</th>
+<th>What an instance represents</th>
+<th>What serialization does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GitObject</code> (203)</td>
+<td>Common interface for stored objects</td>
+<td>Defines the operations child classes supply.</td>
+</tr>
+<tr>
+<td><code>GitBlob</code> (279)</td>
+<td>One file’s contents, including binary data</td>
+<td>Returns the stored bytes directly.</td>
+</tr>
+<tr>
+<td><code>GitTree</code> (545)</td>
+<td>One directory listing</td>
+<td>Encodes entries. Each <code>GitTreeLeaf</code> (483) holds a mode, a name and the ID of the child.</td>
+</tr>
+<tr>
+<td><code>GitCommit</code> (426)</td>
+<td>A snapshot plus the information needed to place it in history</td>
+<td>Encodes fields such as tree, parent and author, then the message.</td>
+</tr>
+<tr>
+<td><code>GitTag</code> (684)</td>
+<td>An annotated tag object</td>
+<td>Inherits the commit class’s field-and-message format. Its fields describe the tagged object.</td>
+</tr>
+</tbody>
+</table>
+<p>Look at the call <code>obj.serialize()</code> inside <code>object_write</code>. The storage function can save any of these objects. Python chooses the method belonging to the object passed in. In a C++ viva, this is the example to use for <strong>runtime polymorphism</strong>. A base-class reference calling a virtual <code>serialize()</code> can express the same idea.</p>
+<h2>3. Follow one file through add, edit and commit</h2>
+<p>The following sequence was checked against the project’s Python implementation in a temporary repository with a configured user name and email. Commands use the tutorial’s <code>wyag</code> launcher. The word after each <code>printf</code> is followed by a newline.</p>
+<pre><code class="language-sh">wyag init demo
+cd demo
+mkdir notes
+printf 'blob\n' &gt; notes/viva.txt
+wyag add notes/viva.txt
+printf 'tree\n' &gt; notes/viva.txt
+wyag commit -m &quot;Study blobs&quot;
+wyag status
+wyag checkout HEAD ../saved
+cat ../saved/notes/viva.txt
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Moment</th>
+<th>Working file</th>
+<th>Index entry points to</th>
+<th>Latest commit contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>After writing the file</td>
+<td>blob</td>
+<td>No entry</td>
+<td>No commit</td>
+</tr>
+<tr>
+<td>After add</td>
+<td>blob</td>
+<td>Blob containing “blob”</td>
+<td>No commit</td>
+</tr>
+<tr>
+<td>After the second edit</td>
+<td>tree</td>
+<td>Blob containing “blob”</td>
+<td>No commit</td>
+</tr>
+<tr>
+<td>After commit</td>
+<td>tree</td>
+<td>Blob containing “blob”</td>
+<td>blob</td>
+</tr>
+</tbody>
+</table>
+<p><strong>During add.</strong> Read <code>add</code> (1386). It first calls <code>rm</code> with <code>delete=False</code> to clear any older index entry for the path while keeping the working file. It opens the file in binary mode and calls <code>object_hash</code>, which constructs a blob and passes it to <code>object_write</code>. Then it appends a <code>GitIndexEntry</code> containing the relative path, the blob ID and filesystem metadata. Finally, <code>index_write</code> saves the updated list. Editing the file afterward changes only the working copy.</p>
+<p><strong>During commit.</strong> Read <code>cmd_commit</code> (1540). Its input is the saved index. <code>tree_from_index</code> (1454) groups entries by directory and processes the deepest paths first. In this example it writes a tree for <code>notes</code> containing an entry called <code>viva.txt</code>. Now it has the ID it needs to put a <code>notes</code> entry into the root tree. This order answers a practical question: how could a parent store its child’s ID before the child has been written?</p>
+<p>Next, <code>commit_create</code> (1517) records the root tree ID, author, time and message. On later commits it also records the previous commit as a parent. It writes the commit and returns its ID. On the active branch, <code>cmd_commit</code> puts that ID in <code>.git/refs/heads/master</code>. The next time WYAG follows HEAD, it reaches the new commit.</p>
+<p><strong>During status.</strong> Read <code>cmd_status</code> (1146). The first comparison flattens the committed tree into a path-to-ID dictionary and compares it with the index. Here they agree. The second comparison checks index entries against working files. Changed timestamps prompt WYAG to hash the file again. Here the bytes differ, so it reports <code>notes/viva.txt</code> under “Changes not staged for commit.” For files absent from the index it consults ignore rules before listing them as untracked.</p>
+<p><strong>During checkout.</strong> Read <code>cmd_checkout</code> (599) and <code>tree_checkout</code> (619). WYAG follows the commit to the root tree, creates the <code>notes</code> directory in the destination, follows the <code>viva.txt</code> entry and writes the blob’s bytes. The last command prints <strong>blob</strong>. Your original working copy still says <strong>tree</strong>. This tutorial’s checkout exports into a new or empty directory.</p>
+<h2>4. How do I read history and look things up?</h2>
+<p>A commit has two kinds of links worth following. Follow its <strong>tree</strong> to ask “what files existed then?” Follow its <strong>parent</strong> to ask “what came before?” Two commits with different messages can share the same root tree. Two trees with different filenames can share a blob. The IDs let unchanged parts of the project be reused.</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Command</th>
+<th>Where to look in the Python file</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What ID would these bytes get?</td>
+<td><code>hash-object</code></td>
+<td><code>object_hash</code> (337) picks an object class. The command’s <code>-w</code> option also stores the object.</td>
+</tr>
+<tr>
+<td>What bytes are inside this object?</td>
+<td><code>cat-file</code></td>
+<td><code>cat_file</code> (304) resolves the name, reads the object and outputs its serialized payload.</td>
+</tr>
+<tr>
+<td>Which files belong to a snapshot?</td>
+<td><code>ls-tree</code></td>
+<td><code>ls_tree</code> (570) prints entries. Recursive mode descends into subtrees.</td>
+</tr>
+<tr>
+<td>How are commits related?</td>
+<td><code>log</code></td>
+<td><code>log_graphviz</code> (452) follows parent IDs and emits Graphviz graph text. A set called <code>seen</code> prevents repeated visits to shared ancestors.</td>
+</tr>
+<tr>
+<td>Which names point to objects?</td>
+<td><code>show-ref</code></td>
+<td><code>ref_list</code> (651) walks the refs directory. <code>ref_resolve</code> (632) follows indirect names to an ID.</td>
+</tr>
+<tr>
+<td>Which object does this name mean?</td>
+<td><code>rev-parse</code></td>
+<td><code>object_resolve</code> (744) collects candidates for names and hash prefixes. <code>object_find</code> (796) checks ambiguity and can follow a commit to its tree.</td>
+</tr>
+<tr>
+<td>What does a tag store?</td>
+<td><code>tag</code></td>
+<td><code>tag_create</code> (717) writes a named reference. An annotated tag adds a tag object between that name and its target.</td>
+</tr>
+<tr>
+<td>Which files are in the index?</td>
+<td><code>ls-files</code></td>
+<td><code>cmd_ls_files</code> (1013) reads index entries and prints their paths.</td>
+</tr>
+<tr>
+<td>Would ignore rules match this path?</td>
+<td><code>check-ignore</code></td>
+<td><code>gitignore_read</code> (1076) gathers rules. <code>check_ignore</code> (1134) checks them for the given path.</td>
+</tr>
+<tr>
+<td>How is a deletion staged?</td>
+<td><code>rm</code></td>
+<td><code>rm</code> (1333) removes matching entries, optionally deletes working files and writes the index. Earlier commits still reference their saved blobs.</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Three parsing details to read on a second pass</h2>
+<ul>
+<li><strong>Commit text.</strong> In <code>kvlm_parse</code> (351), a blank line separates the fields from the message. The dictionary uses the Python key <code>None</code> for that message. Repeated fields can become a list, which lets the reader represent a commit with several parents. WYAG’s commit command itself supplies at most one parent.</li>
+<li><strong>Tree bytes.</strong> In <code>tree_parse_one</code> (489), the parser reads a mode up to a space, a name up to a zero byte, and then exactly 20 bytes for the child ID. Twenty raw bytes become 40 hexadecimal characters for display. The function returns the next position so <code>tree_parse</code> can continue with the next entry.</li>
+<li><strong>Index bytes.</strong> In <code>index_read</code> (901), the first 12 bytes identify the file, its format version and the number of entries. This reader expects index version 2. It then reads paths, object IDs and metadata into Python objects. The saved timestamps help <code>status</code> decide when a closer comparison is worthwhile.</li>
+</ul>
+<p><strong>A useful viva question:</strong> If you rename a file and commit the rename without changing its contents, which IDs change? The blob ID stays the same because the bytes stayed the same. The tree that contains the name gets a new ID, as do its ancestor trees. The new commit refers to the new root tree and links back to the previous commit.</p>
+<p><strong>Source and scope.</strong> Read this alongside the project’s <code>libwyag.py</code> and the <a href="https://wyag.thb.lt/">original WYAG tutorial</a>. The tutorial explains branches as references. A branch-switching command and a merge command would be additions to RIZZ.</p>
+
+</article></section></main>
+<script>
+const topics=[{"title": "Repository", "q": "Where does a command run?", "fn": "repo_find", "desc": "Start inside notes/. This function looks for .git in the current directory. If it cannot find it, it tries the parent. Once it finds .git, it returns a GitRepository that knows both the project folder and its hidden storage folder.", "line": 182, "code": "def repo_find(path=\".\", required=True):\n    path = os.path.realpath(path)\n\n    if os.path.isdir(os.path.join(path, \".git\")):\n        return GitRepository(path)\n\n    # If we haven't returned, recurse in parent, if w\n    parent = os.path.realpath(os.path.join(path, \"..\"))\n\n    if parent == path:\n        # Bottom case\n        # os.path.join(\"/\", \"..\") == \"/\":\n        # If parent==path, then path is root.\n        if required:\n            raise Exception(\"No git directory.\")\n        else:\n            return None\n\n    # Recursive case\n    return repo_find(parent, required)"}, {"title": "Objects", "q": "How are bytes stored?", "fn": "object_write", "desc": "A blob holds the file contents. This function asks the object to serialize itself, adds its type and length, then hashes those bytes. That ID determines where the compressed object lives. Two files with identical contents can share a blob.", "line": 261, "code": "def object_write(obj, repo=None):\n    # Serialize object data\n    data = obj.serialize()\n    # Add header\n    result = obj.fmt + b' ' + str(len(data)).encode() + b'\\x00' + data\n    # Compute hash\n    sha = hashlib.sha1(result).hexdigest()\n\n    if repo:\n        # Compute path\n        path=repo_file(repo, \"objects\", sha[0:2], sha[2:], mkdir=True)\n\n        if not os.path.exists(path):\n            with open(path, 'wb') as f:\n                # Compress and write\n                f.write(zlib.compress(result))\n    return sha"}, {"title": "Staging", "q": "What will be committed?", "fn": "add", "desc": "A file can change again after you stage it. add reads its bytes now, saves a blob and records its ID beside the path in the index. The next commit uses that recorded version.", "line": 1386, "code": "def add(repo, paths, delete=True, skip_missing=False):\n\n    # First remove all paths from the index, if they exist.\n    rm (repo, paths, delete=False, skip_missing=True)\n\n    worktree = repo.worktree + os.sep\n\n    # Convert the paths to pairs: (absolute, relative_to_worktree).\n    # Also delete them from the index if they're present.\n    clean_paths = set()\n    for path in paths:\n        abspath = os.path.abspath(path)\n        if not (abspath.startswith(worktree) and os.path.isfile(abspath)):\n            raise Exception(f\"Not a file, or outside the worktree: {paths}\")\n        relpath = os.path.relpath(abspath, repo.worktree)\n        clean_paths.add((abspath,  relpath))\n\n    # Find and read the index.  It was modified by rm.  (This isn't\n    # optimal, good enough for wyag!)\n    #\n    # @FIXME, though: we could just move the index through\n    # commands instead of reading and writing it over again.\n    index = index_read(repo)\n\n    for (abspath, relpath) in clean_paths:\n        with open(abspath, \"rb\") as fd:\n            sha = object_hash(fd, b\"blob\", repo)\n\n            stat = os.stat(abspath)\n\n            ctime_s = int(stat.st_ctime)\n            ctime_ns = stat.st_ctime_ns % 10**9\n            mtime_s = int(stat.st_mtime)\n            mtime_ns = stat.st_mtime_ns % 10**9\n\n            entry = GitIndexEntry(ctime=(ctime_s, ctime_ns), mtime=(mtime_s, mtime_ns), dev=stat.st_dev, ino=stat.st_ino,\n                                  mode_type=0b1000, mode_perms=0o644, uid=stat.st_uid, gid=stat.st_gid,\n                                  fsize=stat.st_size, sha=sha, flag_assume_valid=False,\n                                  flag_stage=False, name=relpath)\n            index.entries.append(entry)\n\n    # Write the index back\n    index_write(repo, index)"}, {"title": "Snapshots", "q": "How do folders become history?", "fn": "cmd_commit", "desc": "The index is a flat list of paths. tree_from_index builds the deepest directory trees first, so each parent can record the IDs of its children. commit_create saves the root tree ID, author, message and previous commit if one exists. The active branch then advances.", "line": 1540, "code": "def cmd_commit(args):\n    repo = repo_find()\n    index = index_read(repo)\n    # Create trees, grab back SHA for the root tree.\n    tree = tree_from_index(repo, index)\n\n    # Create the commit object itself\n    commit = commit_create(repo,\n                           tree,\n                           object_find(repo, \"HEAD\"),\n                           gitconfig_user_get(gitconfig_read()),\n                           datetime.now(),\n                           args.message)\n\n    # Update HEAD so our commit is now the tip of the active branch.\n    active_branch = branch_get_active(repo)\n    if active_branch: # If we're on a branch, we update refs/heads/BRANCH\n        with open(repo_file(repo, os.path.join(\"refs/heads\", active_branch)), \"w\") as fd:\n            fd.write(commit + \"\\n\")\n    else: # Otherwise, we update HEAD itself.\n        with open(repo_file(repo, \"HEAD\"), \"w\") as fd:\n            fd.write(\"\\n\")"}, {"title": "History & refs", "q": "How does HEAD find a commit?", "fn": "ref_resolve", "desc": "HEAD usually contains a line such as \u201cref: refs/heads/master\u201d. ref_resolve opens that second file to get the commit ID. A commit points to its parent for history and to its tree for files.", "line": 632, "code": "def ref_resolve(repo, ref):\n    path = repo_file(repo, ref)\n\n    # Sometimes, an indirect reference may be broken.  This is normal\n    # in one specific case: we're looking for HEAD on a new repository\n    # with no commits.  In that case, .git/HEAD points to \"ref:\n    # refs/heads/main\", but .git/refs/heads/main doesn't exist yet\n    # (since there's no commit for it to refer to).\n    if not os.path.isfile(path):\n        return None\n\n    with open(path, 'r') as fp:\n        data = fp.read()[:-1]\n        # Drop final \\n ^^^^^\n    if data.startswith(\"ref: \"):\n        return ref_resolve(repo, data[5:])\n    else:\n        return data"}, {"title": "Status", "q": "Which version changed?", "fn": "cmd_status", "desc": "Status asks two separate questions. Comparing HEAD with the index shows staged changes. Comparing the index with working files shows edits made since staging. A file can appear in both groups.", "line": 1146, "code": "def cmd_status(_):\n    repo = repo_find()\n    index = index_read(repo)\n\n    cmd_status_branch(repo)\n    cmd_status_head_index(repo, index)\n    print()\n    cmd_status_index_worktree(repo, index)"}];
+const get=id=>document.getElementById(id);
+const views=[...document.querySelectorAll('[data-view]')];
+function view(id){for(const b of views){const active=b.dataset.view===id;get(b.dataset.view).hidden=!active;b.setAttribute('aria-pressed',active)}}
+views.forEach(b=>b.onclick=()=>view(b.dataset.view));
+function choose(i){const t=topics[i];get('loc').textContent=t.fn+'() · line '+t.line;get('question').textContent=t.q;get('description').textContent=t.desc;get('snippet').textContent=t.code;get('source').open=false;[...get('branches').children].forEach((b,j)=>b.setAttribute('aria-pressed',i===j))}
+topics.forEach((t,i)=>{const b=document.createElement('button');b.textContent=t.title;b.onclick=()=>choose(i);get('branches').append(b)});
+const steps=[
+['wyag init demo','Absent','No entry','No commit','WYAG creates .git and points HEAD at the branch where the first commit will go.'],
+["printf 'blob\\n' > notes/viva.txt",'blob','No entry','No commit','Inside demo, create the notes folder and write your first line. Only the working file has content.'],
+['wyag add notes/viva.txt','blob','blob','No commit','add writes a blob and records its ID alongside notes/viva.txt in the index.'],
+["printf 'tree\\n' > notes/viva.txt",'tree','blob','No commit','You edit the file after staging. Predict which word the commit will contain before continuing.'],
+['wyag commit -m "Study blobs"','tree','blob','blob','commit reads the index. Its tree points to the blob containing the word “blob”. The later edit remains in the working file.'],
+['wyag checkout HEAD ../saved','tree','blob','blob','Open ../saved/notes/viva.txt and you will read “blob”. WYAG exported the saved tree to a separate folder.']
+];let pos=0;function stage(){const row=steps[pos];['command','working','indexval','commitval','why'].forEach((id,i)=>get(id).textContent=row[i]);get('step').textContent='Step '+(pos+1)+' of '+steps.length;get('prev').disabled=pos===0;get('next').textContent=pos===steps.length-1?'Restart lab':'Next step'}
+get('prev').onclick=()=>{if(pos>0)pos--;stage()};get('next').onclick=()=>{pos=(pos+1)%steps.length;stage()};choose(0);stage();view('mapview');
+</script></html>
